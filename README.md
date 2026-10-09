@@ -102,6 +102,42 @@ Anything the hints miss gets caught by a poll-loop detector. It fires after the
 same register reads back the same value 64 times with no write in between, and
 it logs each time it steps in.
 
+## Function matching (stripped firmware)
+
+`halrs match` recovers function names and writes HALucinator's `addrs.yaml`,
+so a stripped image can run with a stock HALucinator config. It works in
+tiers:
+
+1. **ELF symbols.** If the input has them, they're used directly. The output is
+   identical to HALucinator's `hal_make_addr`, without its angr dependency.
+2. **Vector table.** The CMSIS core handlers (Reset, HardFault, SysTick, ...)
+   are named by slot. Device IRQ handlers are named from the SVD's interrupt
+   names when you pass `--svd`.
+3. **Ghidra FunctionID**, against reference builds of the STM32F4 HAL. A name
+   is only applied when every match above the score threshold agrees.
+4. **Call-graph context**, LibMatch-style. Names spread outward from the
+   tier-2 and tier-3 anchors:
+   - *Downward:* a named function's callees, when its call list lines up with
+     a reference function's.
+   - *Upward:* an unnamed function whose named callees pin down exactly one
+     reference function.
+
+   A proposal is applied only if it's unanimous and doesn't reuse a name.
+
+```sh
+# one-time setup: Ghidra + JDK 21 (GHIDRA_INSTALL_DIR / JAVA_HOME, or under
+# ~/.local/opt), arm-none-eabi-gcc toolchains (~/.local/opt/*/bin, or HALRS_TOOLCHAINS)
+(cd python && uv sync --extra match)
+git submodule update --init extern/stm32/*
+halrs fidb build                       # HAL v1.7.6+v1.8.5 x each toolchain x -O0/-Os/-O2
+halrs match firmware.bin --svd chip.svd -o firmware_addrs.yaml
+halrs run -c config.yaml -c firmware_addrs.yaml -c memory.yaml
+```
+
+Reference sources are the `extern/stm32/` submodules: STM's
+`stm32f4xx-hal-driver`, `cmsis-device-f4`, and CMSIS_6. Any HAL tag in the
+driver's history can be built with `--hal`.
+
 ## Tests
 
 ```sh
@@ -139,7 +175,8 @@ Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 | SVD / SystemRDL -> Rust models, hints, poll detector | done |
 | IRQs from handlers (NVIC), Ctrl-C while blocked | done |
 | `AvatarPeripheral`-based bp_handlers (`get_mmio_info`) and watchpoints | not yet |
-| Tier-2 function matching (pyghidra FunctionID), LibMatch | not yet |
+| Function matching: ELF symbols, vector table, FunctionID, call-graph context | done (STM32F4 HAL references) |
+| Matching for other vendor HALs; the full LibMatch submodule | not yet |
 | avatar2 `HalrsTarget` (drive halrs QEMU from avatar2 scripts) | not yet |
 | Pcode backend | waiting on the Pcode target; see contract below |
 | Benchmarks: plugin overhead with no hooks; stock HALucinator comparison | not yet |

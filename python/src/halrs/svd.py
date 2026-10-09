@@ -65,3 +65,9 @@ def load_svd(path: Path) -> tuple[str | None, list[Peripheral]]:
                                   registers=_registers(p.registers)))
     cpu = getattr(getattr(dev, "cpu", None), "name", None)
     return (str(cpu) if cpu else None), periphs
+
+
+def irq_names(path: Path) -> dict[int, str]:
+    """NVIC IRQ number -> interrupt name (for vector-table naming)."""
+    dev = SVDParser.for_xml_file(str(path)).get_device()
+    return {i.value: i.name for p in dev.peripherals for i in (p.interrupts or [])}
