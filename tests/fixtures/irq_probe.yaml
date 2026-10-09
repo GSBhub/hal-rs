@@ -1,0 +1,11 @@
+intercepts:
+- class: irq_probe.IrqProbe
+  function: HAL_UART_GetState
+  symbol: HAL_UART_GetState
+- class: irq_probe.IrqProbe
+  function: USART1_IRQHandler
+  symbol: USART1_IRQHandler
+# Don't block for UART input; this test only cares about the interrupt.
+- class: halucinator.bp_handlers.ReturnZero
+  function: HAL_UART_Receive_IT
+  symbol: HAL_UART_Receive_IT

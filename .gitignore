@@ -1,0 +1,6 @@
+/build/
+/target/
+/tmp/
+python/.venv/
+__pycache__/
+*.pyc

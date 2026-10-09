@@ -1,0 +1,36 @@
+[project]
+name = "halrs"
+version = "0.1.0"
+description = "hal-rs front end: HALucinator configs + SVD/RDL -> run.json, runner, avatar2 shim"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "avatar2",
+    # HALucinator itself is used from extern/halucinator/src via sys.path (its
+    # distutils-based setup.py does not install on 3.12); these are its imports.
+    "pyyaml",
+    "pyzmq",
+    "ipython",
+    "pyelftools",
+    "pydantic>=2",
+    # avatar2 and HALucinator still `import distutils`; setuptools ships the shim.
+    # (<81: avatar2 also uses pkg_resources, removed in newer setuptools)
+    "setuptools<81",
+    "cmsis-svd>=0.6",
+    "systemrdl-compiler>=1.33.0",
+]
+
+[project.scripts]
+halrs = "halrs.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv.sources]
+avatar2 = { path = "../extern/avatar2", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100

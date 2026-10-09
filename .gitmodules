@@ -1,0 +1,9 @@
+[submodule "extern/halucinator"]
+	path = extern/halucinator
+	url = https://github.com/embedded-sec/halucinator
+[submodule "extern/avatar2"]
+	path = extern/avatar2
+	url = https://github.com/avatartwo/avatar2
+[submodule "extern/qmake"]
+	path = extern/qmake
+	url = https://github.com/GSBhub/qmake

@@ -1,0 +1,159 @@
+# hal-rs
+
+HALucinator-style firmware rehosting on a stock QEMU built out-of-tree by
+[qmake](extern/qmake), with HAL handlers running **in-process**: Rust for the hot
+paths, an embedded CPython for HALucinator's own handlers, and peripheral models
+generated from CMSIS-SVD / SystemRDL.
+
+HALucinator and avatar2 are **submodules, used unmodified**. `halrs run` takes the
+same `-c` YAML configs as `halucinator`, runs the same `bp_handlers` and
+`peripheral_models`, and talks to the same external devices (`hal_dev_uart`, ...)
+over the same zmq peripheral server. Only the QEMU side changes:
+
+- no avatar-qemu fork: QEMU 10.2 plus ~400 lines of C glue (machine + generic MMIO device) built through qmake;
+- no GDB/QMP round trip per hook: an intercept is a TCG plugin callback;
+- firmware peripherals without a HAL handler can be modelled from an SVD/RDL file.
+
+## Layout
+
+```
+qemu/                 C glue linked into QEMU (via qmake): halrs-m machine + halrs-periph device
+crates/halrs-core     run.json IR (serde), register-file models, hints, firmware patching
+crates/halrs-plugin   libhalrs.so: QEMU TCG plugin; PyO3 interpreter hosting HALucinator handlers
+python/src/halrs      front end (HALucinator config + SVD/RDL -> run.json), avatar2 shim, CLI
+extern/               qmake, halucinator, avatar2 (v1.3.1, the version HALucinator pins)
+tests/                pytest e2e + IR contract tests; fixtures
+bench/                hook-rate benchmark
+```
+
+How a run fits together:
+
+1. `halrs run` loads the HALucinator configs with HALucinator's own
+   `HalucinatorConfig`, adds SVD/RDL register maps, and writes `run.json`
+   (validated against `python/src/halrs/ir.py`).
+2. QEMU loads `libhalrs.so`, which writes copies of the firmware with each
+   intercepted function's entry replaced by `bx lr`, and hooks only those
+   instructions.
+3. The `halrs-m` machine asks the plugin for its layout (`halrs_board()`), maps
+   memories and one `halrs-periph` MMIO window per peripheral, and forwards MMIO
+   to the plugin.
+4. On an intercept, the plugin either returns a constant (Rust) or calls
+   `halrs.runtime.dispatch`, which runs HALucinator's `interceptor` against an
+   avatar2-compatible shim (`regs.r0`, `read_memory`, `get_arg`, `irq_set`, ...).
+
+## Build
+
+Needs QEMU's build deps (meson, ninja, glib, pixman), CMake >= 3.30, Rust, and
+[uv](https://docs.astral.sh/uv/).
+
+```sh
+git submodule update --init --recursive        # (extern/qmake/extern/qemu: --depth 1 is fine)
+(cd python && uv sync)                         # venv with avatar2 + HALucinator's deps
+cmake -S . -B build -G Ninja && cmake --build build --target qemu
+PYO3_PYTHON=$PWD/python/.venv/bin/python cargo build --release -p halrs-plugin
+```
+
+The plugin embeds the venv's (uv-managed) CPython 3.12; `PYO3_PYTHON` pins which
+one it links. Rebuilding the plugin never relinks QEMU; QEMU only needs
+rebuilding when `qemu/` changes.
+
+## Run
+
+```sh
+cd extern/halucinator
+EX=test/STM32/example
+../../python/.venv/bin/halrs run -c $EX/Uart_Hyperterminal_IT_O0_config.yaml \
+    -c $EX/Uart_Hyperterminal_IT_O0_addrs.yaml -c $EX/Uart_Hyperterminal_IT_O0_memory.yaml
+# in another terminal, HALucinator's own UART device:
+PYTHONPATH=src ../../python/.venv/bin/python -m halucinator.external_devices.uart -i 1073811456
+```
+
+Useful options: `--svd FILE` / `--rdl FILE` (model peripherals in Rust),
+`--skip-intercept FUNC` (let real HAL code run against those models),
+`--handlers DIR` (your own `bp_handler` modules), `--no-python` (every handler
+becomes `return 0`), `--trace-mmio`, `--gdb`, `--dry-run`.
+
+Example: run the firmware's real clock/power init against STM32F429 SVD models
+instead of HALucinator's `ReturnZero` intercepts:
+
+```sh
+halrs run -c ... --svd ../../tests/fixtures/svd/STM32F429.svd \
+  --skip-intercept HAL_Init --skip-intercept HAL_RCC_OscConfig \
+  --skip-intercept HAL_RCC_ClockConfig --skip-intercept HAL_PWREx_EnableOverDrive
+```
+
+## Peripheral models
+
+SVD (via `cmsis-svd`) and SystemRDL (via `systemrdl-compiler`) both lower to the
+same IR. The Rust model keeps reset values and access semantics (RO, WO, W1C,
+read-clear). Undescribed offsets behave like RAM. Static hints cover the usual
+status-polling patterns:
+
+| hint | rule | example |
+|---|---|---|
+| `poll-set` | `*RDY`, `TXE`, `TC`, `EOC`, ... in a status/control register | `USART_SR.TXE` |
+| `poll-clear` | `BSY`, `BUSY`, ... | `FLASH_SR.BSY` |
+| `mirror` | `<X>RDY` follows `<X>ON`; read-only `<X>S` reports `<X>` | `RCC_CR.PLLRDY`, `RCC_CFGR.SWS` |
+
+Anything the hints miss gets caught by a poll-loop detector. It fires after the
+same register reads back the same value 64 times with no write in between, and
+it logs each time it steps in.
+
+## Tests
+
+```sh
+cargo test -p halrs-core
+(cd python && uv run pytest ../tests)
+bench/hook_rate.sh
+```
+
+The e2e tests boot HALucinator's STM32 UART example and type into it through
+`hal_dev_uart`. They run it twice: once with HALucinator's own config, and once
+with clock/power init running against SVD models instead of intercepts. They
+also raise an IRQ from a Python handler, and check that Ctrl-C works while a
+handler is blocked.
+
+Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
+`HAL_UART_GetState`, guest loop included:
+
+| handler | rate | per hook |
+|---|---|---|
+| Rust (`return 0`) | ~11.4 M/s | ~88 ns |
+| Python (HALucinator `ReturnZero` via its `interceptor`) | ~80 k/s | ~12.6 µs |
+
+## Status
+
+| | |
+|---|---|
+| halrs-m machine, halrs-periph, plugin ABI | done |
+| Stub intercepts (`bx lr`), Rust return handlers | done |
+| Embedded HALucinator handlers, avatar2 shim, zmq peripheral server | done |
+| HALucinator `emulate:` peripherals (Python `AvatarPeripheral`) | done |
+| SVD / SystemRDL -> Rust models, hints, poll detector | done |
+| IRQs from handlers (NVIC), Ctrl-C while blocked | done |
+| Pass-through handlers (`return False, None`) | **not yet**: needs trampoline mode; logs a warning today |
+| `AvatarPeripheral`-based bp_handlers (`get_mmio_info`) and watchpoints | not yet |
+| Tier-2 function matching (pyghidra FunctionID), LibMatch | not yet |
+| avatar2 `HalrsTarget` (drive halrs QEMU from avatar2 scripts) | not yet |
+| Pcode backend | waiting on the Pcode target; see contract below |
+| Benchmarks: plugin overhead with no hooks; stock HALucinator comparison | not yet |
+
+### Compatibility notes
+
+- avatar2 is pinned to **v1.3.1**, the version HALucinator pins. Newer avatar2
+  passes `origin=` to peripheral handlers, which HALucinator's
+  `GenericPeripheral` rejects.
+- HALucinator is used from `extern/halucinator/src` on `sys.path`, not
+  installed: its `distutils` `setup.py` doesn't install on 3.12.
+  `halrs.compat` restores `inspect.getargspec`, and `setuptools<81` provides
+  `distutils` and `pkg_resources` for avatar2.
+
+## Pcode-target contract
+
+A backend gets the whole HAL layer unchanged if it provides four things:
+
+1. TCG plugin support (it comes free with `translator_loop`).
+2. A return-stub encoding plus argument and return registers for its ABI. The
+   Sleigh `.cspec` can generate these.
+3. gdb-xml register names, which `qemu_plugin_get_registers` exposes.
+4. A machine that can map `halrs-periph` windows.

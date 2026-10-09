@@ -1,0 +1,23 @@
+[package]
+name = "halrs-plugin"
+description = "libhalrs.so: QEMU TCG plugin hosting hal-rs models and HAL handlers"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[lib]
+name = "halrs"
+crate-type = ["cdylib"]
+
+[dependencies]
+halrs-core.workspace = true
+pyo3 = { version = "0.29", optional = true }
+qemu-plugin-sys = { version = "=10.1.0-v2", features = ["plugin-api-v5"], default-features = false }
+
+[features]
+default = ["python"]
+# Embedded CPython running HALucinator handlers (PyO3).
+python = ["dep:pyo3", "dep:pyo3-build-config"]
+
+[build-dependencies]
+pyo3-build-config = { version = "0.29", optional = true }

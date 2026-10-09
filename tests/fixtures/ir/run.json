@@ -1,0 +1,2897 @@
+{
+ "arch": "armv7m",
+ "cpu": "cortex-m3",
+ "num_irq": 96,
+ "sysclk_hz": 168000000,
+ "memory": [
+  {
+   "name": "alias",
+   "base": 0,
+   "size": 8388608,
+   "rom": true,
+   "file": "Uart_Hyperterminal_IT_O0.elf.bin"
+  },
+  {
+   "name": "flash",
+   "base": 134217728,
+   "size": 2097152,
+   "rom": true,
+   "file": "Uart_Hyperterminal_IT_O0.elf.bin"
+  },
+  {
+   "name": "ram",
+   "base": 536870912,
+   "size": 331776,
+   "rom": false
+  }
+ ],
+ "peripherals": [
+  {
+   "name": "logger",
+   "base": 1073741824,
+   "size": 536870912,
+   "irqs": [],
+   "registers": [],
+   "model": "python"
+  },
+  {
+   "name": "RCC",
+   "base": 1073887232,
+   "size": 1024,
+   "irqs": [
+    5
+   ],
+   "registers": [
+    {
+     "name": "CR",
+     "offset": 0,
+     "size": 32,
+     "reset": 131,
+     "fields": [
+      {
+       "name": "PLLI2SRDY",
+       "lsb": 27,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 26
+       }
+      },
+      {
+       "name": "PLLI2SON",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLRDY",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 24
+       }
+      },
+      {
+       "name": "PLLON",
+       "lsb": 24,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CSSON",
+       "lsb": 19,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HSEBYP",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HSERDY",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 16
+       }
+      },
+      {
+       "name": "HSEON",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HSICAL",
+       "lsb": 8,
+       "width": 8,
+       "access": "read-only"
+      },
+      {
+       "name": "HSITRIM",
+       "lsb": 3,
+       "width": 5,
+       "access": "read-write"
+      },
+      {
+       "name": "HSIRDY",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 0
+       }
+      },
+      {
+       "name": "HSION",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "PLLCFGR",
+     "offset": 4,
+     "size": 32,
+     "reset": 603992080,
+     "fields": [
+      {
+       "name": "PLLQ3",
+       "lsb": 27,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLQ2",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLQ1",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLQ0",
+       "lsb": 24,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLSRC",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLP1",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLP0",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN8",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN7",
+       "lsb": 13,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN6",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN5",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN4",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN3",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN2",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN1",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLN0",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLM5",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLM4",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLM3",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLM2",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLM1",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLM0",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CFGR",
+     "offset": 8,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "MCO2",
+       "lsb": 30,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "MCO2PRE",
+       "lsb": 27,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "MCO1PRE",
+       "lsb": 24,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "I2SSRC",
+       "lsb": 23,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "MCO1",
+       "lsb": 21,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "RTCPRE",
+       "lsb": 16,
+       "width": 5,
+       "access": "read-write"
+      },
+      {
+       "name": "PPRE2",
+       "lsb": 13,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "PPRE1",
+       "lsb": 10,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "HPRE",
+       "lsb": 4,
+       "width": 4,
+       "access": "read-write"
+      },
+      {
+       "name": "SWS1",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 1
+       }
+      },
+      {
+       "name": "SWS0",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 0
+       }
+      },
+      {
+       "name": "SW1",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SW0",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CIR",
+     "offset": 12,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "CSSC",
+       "lsb": 23,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "PLLI2SRDYC",
+       "lsb": 21,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "PLLRDYC",
+       "lsb": 20,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "HSERDYC",
+       "lsb": 19,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "HSIRDYC",
+       "lsb": 18,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "LSERDYC",
+       "lsb": 17,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "LSIRDYC",
+       "lsb": 16,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "PLLI2SRDYIE",
+       "lsb": 13,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLRDYIE",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HSERDYIE",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HSIRDYIE",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LSERDYIE",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LSIRDYIE",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CSSF",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "PLLI2SRDYF",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "PLLRDYF",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "HSERDYF",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "HSIRDYF",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "LSERDYF",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "LSIRDYF",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-only"
+      }
+     ]
+    },
+    {
+     "name": "AHB1RSTR",
+     "offset": 16,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "OTGHSRST",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACRST",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMA2RST",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMA1RST",
+       "lsb": 21,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CRCRST",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOIRST",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOHRST",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOGRST",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOFRST",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOERST",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIODRST",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOCRST",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOBRST",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOARST",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB2RSTR",
+     "offset": 20,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "OTGFSRST",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RNGRST",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HSAHRST",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CRYPRST",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DCMIRST",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB3RSTR",
+     "offset": 24,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "FMCRST",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "APB1RSTR",
+     "offset": 32,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "TIM2RST",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM3RST",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM4RST",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM5RST",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM6RST",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM7RST",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM12RST",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM13RST",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM14RST",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WWDGRST",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI2RST",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI3RST",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART2RST",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART3RST",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART4RST",
+       "lsb": 19,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART5RST",
+       "lsb": 20,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C1RST",
+       "lsb": 21,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C2RST",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C3RST",
+       "lsb": 23,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CAN1RST",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CAN2RST",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PWRRST",
+       "lsb": 28,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DACRST",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "APB2RSTR",
+     "offset": 36,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "TIM1RST",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM8RST",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART1RST",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART6RST",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADCRST",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SDIORST",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI1RST",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SYSCFGRST",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM9RST",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM10RST",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM11RST",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB1ENR",
+     "offset": 48,
+     "size": 32,
+     "reset": 1048576,
+     "fields": [
+      {
+       "name": "OTGHSULPIEN",
+       "lsb": 30,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "OTGHSEN",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACPTPEN",
+       "lsb": 28,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACRXEN",
+       "lsb": 27,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACTXEN",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACEN",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMA2EN",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMA1EN",
+       "lsb": 21,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CCMDATARAMEN",
+       "lsb": 20,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "BKPSRAMEN",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CRCEN",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOIEN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOHEN",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOGEN",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOFEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOEEN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIODEN",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOCEN",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOBEN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOAEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB2ENR",
+     "offset": 52,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "OTGFSEN",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RNGEN",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HASHEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CRYPEN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DCMIEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB3ENR",
+     "offset": 56,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "FMCEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "APB1ENR",
+     "offset": 64,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "TIM2EN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM3EN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM4EN",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM5EN",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM6EN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM7EN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM12EN",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM13EN",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM14EN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WWDGEN",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI2EN",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI3EN",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART2EN",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART3EN",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART4EN",
+       "lsb": 19,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART5EN",
+       "lsb": 20,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C1EN",
+       "lsb": 21,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C2EN",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C3EN",
+       "lsb": 23,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CAN1EN",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CAN2EN",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PWREN",
+       "lsb": 28,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DACEN",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "APB2ENR",
+     "offset": 68,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "TIM1EN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM8EN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART1EN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART6EN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADC1EN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADC2EN",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADC3EN",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SDIOEN",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI1EN",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SYSCFGEN",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM9EN",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM10EN",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM11EN",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB1LPENR",
+     "offset": 80,
+     "size": 32,
+     "reset": 2120716799,
+     "fields": [
+      {
+       "name": "GPIOALPEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOBLPEN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOCLPEN",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIODLPEN",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOELPEN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOFLPEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOGLPEN",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOHLPEN",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "GPIOILPEN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CRCLPEN",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "FLITFLPEN",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SRAM1LPEN",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SRAM2LPEN",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "BKPSRAMLPEN",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMA1LPEN",
+       "lsb": 21,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMA2LPEN",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACLPEN",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACTXLPEN",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACRXLPEN",
+       "lsb": 27,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ETHMACPTPLPEN",
+       "lsb": 28,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "OTGHSLPEN",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "OTGHSULPILPEN",
+       "lsb": 30,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB2LPENR",
+     "offset": 84,
+     "size": 32,
+     "reset": 241,
+     "fields": [
+      {
+       "name": "OTGFSLPEN",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RNGLPEN",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HASHLPEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CRYPLPEN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DCMILPEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "AHB3LPENR",
+     "offset": 88,
+     "size": 32,
+     "reset": 1,
+     "fields": [
+      {
+       "name": "FMCLPEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "APB1LPENR",
+     "offset": 96,
+     "size": 32,
+     "reset": 922667519,
+     "fields": [
+      {
+       "name": "TIM2LPEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM3LPEN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM4LPEN",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM5LPEN",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM6LPEN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM7LPEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM12LPEN",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM13LPEN",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM14LPEN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WWDGLPEN",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI2LPEN",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI3LPEN",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART2LPEN",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART3LPEN",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART4LPEN",
+       "lsb": 19,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UART5LPEN",
+       "lsb": 20,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C1LPEN",
+       "lsb": 21,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C2LPEN",
+       "lsb": 22,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "I2C3LPEN",
+       "lsb": 23,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CAN1LPEN",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CAN2LPEN",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PWRLPEN",
+       "lsb": 28,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DACLPEN",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "APB2LPENR",
+     "offset": 100,
+     "size": 32,
+     "reset": 483123,
+     "fields": [
+      {
+       "name": "TIM1LPEN",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM8LPEN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART1LPEN",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "USART6LPEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADC1LPEN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADC2LPEN",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADC3LPEN",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SDIOLPEN",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPI1LPEN",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SYSCFGLPEN",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM9LPEN",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM10LPEN",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TIM11LPEN",
+       "lsb": 18,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "BDCR",
+     "offset": 112,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "BDRST",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RTCEN",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RTCSEL1",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RTCSEL0",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LSEBYP",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LSERDY",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 0
+       }
+      },
+      {
+       "name": "LSEON",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CSR",
+     "offset": 116,
+     "size": 32,
+     "reset": 234881024,
+     "fields": [
+      {
+       "name": "LPWRRSTF",
+       "lsb": 31,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WWDGRSTF",
+       "lsb": 30,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WDGRSTF",
+       "lsb": 29,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SFTRSTF",
+       "lsb": 28,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PORRSTF",
+       "lsb": 27,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PADRSTF",
+       "lsb": 26,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "BORRSTF",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RMVF",
+       "lsb": 24,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LSIRDY",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-only",
+       "hint": {
+        "mirror": 0
+       }
+      },
+      {
+       "name": "LSION",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "SSCGR",
+     "offset": 128,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "SSCGEN",
+       "lsb": 31,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SPREADSEL",
+       "lsb": 30,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "INCSTEP",
+       "lsb": 13,
+       "width": 15,
+       "access": "read-write"
+      },
+      {
+       "name": "MODPER",
+       "lsb": 0,
+       "width": 13,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "PLLI2SCFGR",
+     "offset": 132,
+     "size": 32,
+     "reset": 536883200,
+     "fields": [
+      {
+       "name": "PLLI2SR",
+       "lsb": 28,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLI2SQ",
+       "lsb": 24,
+       "width": 4,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLI2SN",
+       "lsb": 6,
+       "width": 9,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "DCKCFGR",
+     "offset": 140,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "PLLI2SDIVQ",
+       "lsb": 0,
+       "width": 5,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLSAIDIVQ",
+       "lsb": 8,
+       "width": 5,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLSAIDIVR",
+       "lsb": 16,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "SAI1ASRC",
+       "lsb": 20,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "SAI1BSRC",
+       "lsb": 22,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "TIMPRE",
+       "lsb": 24,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "PLLSAICFGR",
+     "offset": 136,
+     "size": 32,
+     "reset": 603992064,
+     "fields": [
+      {
+       "name": "PLLSAIR",
+       "lsb": 28,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLSAIQ",
+       "lsb": 24,
+       "width": 4,
+       "access": "read-write"
+      },
+      {
+       "name": "PLLSAIN",
+       "lsb": 6,
+       "width": 9,
+       "access": "read-write"
+      }
+     ]
+    }
+   ],
+   "model": "rust"
+  },
+  {
+   "name": "USART1",
+   "base": 1073811456,
+   "size": 1024,
+   "irqs": [
+    37
+   ],
+   "registers": [
+    {
+     "name": "SR",
+     "offset": 0,
+     "size": 32,
+     "reset": 12582912,
+     "fields": [
+      {
+       "name": "CTS",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LBD",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TXE",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-only",
+       "hint": "poll-set"
+      },
+      {
+       "name": "TC",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write",
+       "hint": "poll-set"
+      },
+      {
+       "name": "RXNE",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "IDLE",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "ORE",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "NF",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "FE",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "PE",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-only"
+      }
+     ]
+    },
+    {
+     "name": "DR",
+     "offset": 4,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "DR",
+       "lsb": 0,
+       "width": 9,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "BRR",
+     "offset": 8,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "DIV_Mantissa",
+       "lsb": 4,
+       "width": 12,
+       "access": "read-write"
+      },
+      {
+       "name": "DIV_Fraction",
+       "lsb": 0,
+       "width": 4,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CR1",
+     "offset": 12,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "OVER8",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UE",
+       "lsb": 13,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "M",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WAKE",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PCE",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PS",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PEIE",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TXEIE",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TCIE",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RXNEIE",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "IDLEIE",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "TE",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RE",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RWU",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SBK",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CR2",
+     "offset": 16,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "LINEN",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "STOP",
+       "lsb": 12,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "CLKEN",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CPOL",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CPHA",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LBCL",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LBDIE",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LBDL",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ADD",
+       "lsb": 0,
+       "width": 4,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CR3",
+     "offset": 20,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "ONEBIT",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CTSIE",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CTSE",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RTSE",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMAT",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DMAR",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SCEN",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "NACK",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "HDSEL",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "IRLP",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "IREN",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "EIE",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "GTPR",
+     "offset": 24,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "GT",
+       "lsb": 8,
+       "width": 8,
+       "access": "read-write"
+      },
+      {
+       "name": "PSC",
+       "lsb": 0,
+       "width": 8,
+       "access": "read-write"
+      }
+     ]
+    }
+   ],
+   "model": "rust"
+  },
+  {
+   "name": "PWR",
+   "base": 1073770496,
+   "size": 1024,
+   "irqs": [
+    1
+   ],
+   "registers": [
+    {
+     "name": "CR",
+     "offset": 0,
+     "size": 32,
+     "reset": 49152,
+     "fields": [
+      {
+       "name": "LPDS",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PDDS",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CWUF",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "CSBF",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PVDE",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PLS",
+       "lsb": 5,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "DBP",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "FPDS",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LPLVDS",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "MRLVDS",
+       "lsb": 11,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "VOS",
+       "lsb": 14,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "ODEN",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ODSWEN",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "UDEN",
+       "lsb": 18,
+       "width": 2,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "CSR",
+     "offset": 4,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "WUF",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "SBF",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "PVDO",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "BRR",
+       "lsb": 3,
+       "width": 1,
+       "access": "read-only"
+      },
+      {
+       "name": "EWUP",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "BRE",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "VOSRDY",
+       "lsb": 14,
+       "width": 1,
+       "access": "read-write",
+       "hint": "poll-set"
+      },
+      {
+       "name": "ODRDY",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-only",
+       "hint": "poll-set"
+      },
+      {
+       "name": "ODSWRDY",
+       "lsb": 17,
+       "width": 1,
+       "access": "read-only",
+       "hint": "poll-set"
+      },
+      {
+       "name": "UDRDY",
+       "lsb": 18,
+       "width": 2,
+       "access": "read-write",
+       "hint": "poll-set"
+      }
+     ]
+    }
+   ],
+   "model": "rust"
+  },
+  {
+   "name": "FLASH",
+   "base": 1073888256,
+   "size": 1024,
+   "irqs": [
+    4
+   ],
+   "registers": [
+    {
+     "name": "ACR",
+     "offset": 0,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "LATENCY",
+       "lsb": 0,
+       "width": 3,
+       "access": "read-write"
+      },
+      {
+       "name": "PRFTEN",
+       "lsb": 8,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ICEN",
+       "lsb": 9,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "DCEN",
+       "lsb": 10,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ICRST",
+       "lsb": 11,
+       "width": 1,
+       "access": "write-only"
+      },
+      {
+       "name": "DCRST",
+       "lsb": 12,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "KEYR",
+     "offset": 4,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "KEY",
+       "lsb": 0,
+       "width": 32,
+       "access": "write-only"
+      }
+     ]
+    },
+    {
+     "name": "OPTKEYR",
+     "offset": 8,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "OPTKEY",
+       "lsb": 0,
+       "width": 32,
+       "access": "write-only"
+      }
+     ]
+    },
+    {
+     "name": "SR",
+     "offset": 12,
+     "size": 32,
+     "reset": 0,
+     "fields": [
+      {
+       "name": "EOP",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "OPERR",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "WRPERR",
+       "lsb": 4,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PGAERR",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PGPERR",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "PGSERR",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "BSY",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-only",
+       "hint": "poll-clear"
+      }
+     ]
+    },
+    {
+     "name": "CR",
+     "offset": 16,
+     "size": 32,
+     "reset": 2147483648,
+     "fields": [
+      {
+       "name": "PG",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SER",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "MER",
+       "lsb": 2,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "SNB",
+       "lsb": 3,
+       "width": 5,
+       "access": "read-write"
+      },
+      {
+       "name": "PSIZE",
+       "lsb": 8,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "MER1",
+       "lsb": 15,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "STRT",
+       "lsb": 16,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "EOPIE",
+       "lsb": 24,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "ERRIE",
+       "lsb": 25,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "LOCK",
+       "lsb": 31,
+       "width": 1,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "OPTCR",
+     "offset": 20,
+     "size": 32,
+     "reset": 268413677,
+     "fields": [
+      {
+       "name": "OPTLOCK",
+       "lsb": 0,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "OPTSTRT",
+       "lsb": 1,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "BOR_LEV",
+       "lsb": 2,
+       "width": 2,
+       "access": "read-write"
+      },
+      {
+       "name": "WDG_SW",
+       "lsb": 5,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "nRST_STOP",
+       "lsb": 6,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "nRST_STDBY",
+       "lsb": 7,
+       "width": 1,
+       "access": "read-write"
+      },
+      {
+       "name": "RDP",
+       "lsb": 8,
+       "width": 8,
+       "access": "read-write"
+      },
+      {
+       "name": "nWRP",
+       "lsb": 16,
+       "width": 12,
+       "access": "read-write"
+      }
+     ]
+    },
+    {
+     "name": "OPTCR1",
+     "offset": 24,
+     "size": 32,
+     "reset": 268369920,
+     "fields": [
+      {
+       "name": "nWRP",
+       "lsb": 16,
+       "width": 12,
+       "access": "read-write"
+      }
+     ]
+    }
+   ],
+   "model": "rust"
+  }
+ ],
+ "intercepts": [
+  {
+   "symbol": "HardFault_Handler",
+   "addr": 134226816,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.IPythonShell",
+    "function": "HardFault_Handler"
+   }
+  },
+  {
+   "symbol": "HAL_UART_Init",
+   "addr": 134222428,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
+    "function": "HAL_UART_Init"
+   }
+  },
+  {
+   "symbol": "HAL_UART_GetState",
+   "addr": 134223380,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
+    "function": "HAL_UART_GetState"
+   }
+  },
+  {
+   "symbol": "HAL_UART_Transmit_IT",
+   "addr": 134222584,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
+    "function": "HAL_UART_Transmit_IT"
+   }
+  },
+  {
+   "symbol": "HAL_UART_Receive_IT",
+   "addr": 134222724,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
+    "function": "HAL_UART_Receive_IT"
+   }
+  },
+  {
+   "symbol": "HAL_GetTick",
+   "addr": 134221860,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.generic.timer.Timer",
+    "function": "HAL_GetTick"
+   }
+  },
+  {
+   "symbol": "HAL_InitTick",
+   "addr": 134221728,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.ReturnZero",
+    "function": "HAL_InitTick"
+   }
+  },
+  {
+   "symbol": "HAL_IncTick",
+   "addr": 134221824,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.Counter",
+    "function": "HAL_IncTick"
+   }
+  },
+  {
+   "symbol": "HAL_MspInit",
+   "addr": 134221716,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.ReturnZero",
+    "function": "HAL_MspInit"
+   }
+  },
+  {
+   "symbol": "HAL_RCC_ClockConfig",
+   "addr": 134219868,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.ReturnZero",
+    "function": "HAL_RCC_ClockConfig"
+   }
+  },
+  {
+   "symbol": "HAL_RCC_OscConfig",
+   "addr": 134225328,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.ReturnZero",
+    "function": "HAL_RCC_OscConfig"
+   }
+  },
+  {
+   "symbol": "HAL_PWREx_EnableOverDrive",
+   "addr": 134226480,
+   "mode": "stub",
+   "handler": {
+    "kind": "python",
+    "cls": "halucinator.bp_handlers.ReturnZero",
+    "function": "HAL_PWREx_EnableOverDrive"
+   }
+  }
+ ]
+}

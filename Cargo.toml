@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = ["crates/halrs-core", "crates/halrs-plugin"]
+# Submodules carry their own Cargo workspaces (qmake, QEMU's rust/).
+exclude = ["extern"]
+
+[workspace.package]
+edition = "2024"
+license = "GPL-2.0-or-later"
+version = "0.1.0"
+
+[workspace.dependencies]
+halrs-core = { path = "crates/halrs-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"

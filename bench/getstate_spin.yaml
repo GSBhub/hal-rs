@@ -1,0 +1,11 @@
+# Bench overlay for HALucinator's STM32 UART example: HAL_UART_GetState
+# returns 0 (not READY), so the firmware spins calling it -- every iteration is
+# one intercept. Uses HALucinator's own ReturnZero handler.
+intercepts:
+- class: halucinator.bp_handlers.ReturnZero
+  function: HAL_UART_GetState
+  symbol: HAL_UART_GetState
+# Receive_IT runs first and would block for UART input; skip it.
+- class: halucinator.bp_handlers.ReturnZero
+  function: HAL_UART_Receive_IT
+  symbol: HAL_UART_Receive_IT
