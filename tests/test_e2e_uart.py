@@ -43,8 +43,15 @@ SVD_ONLY_INIT = ["--svd", str(SVD)] + [
                 "HAL_PWREx_EnableOverDrive") for a in ("--skip-intercept", f)]
 
 
+# HALucinator's ArgumentLogger(intercept=False) on HAL_UART_Init: the handler
+# runs, then the real function executes via a trampoline (against SVD models).
+PASSTHROUGH = ["--svd", str(SVD), "--trace-mmio",
+               "-c", str(Path(__file__).parent / "fixtures/passthrough.yaml")]
+
+
 @needs_build
-@pytest.mark.parametrize("extra", [[], SVD_ONLY_INIT], ids=["halucinator-config", "svd-init"])
+@pytest.mark.parametrize("extra", [[], SVD_ONLY_INIT, PASSTHROUGH],
+                         ids=["halucinator-config", "svd-init", "passthrough"])
 def test_uart_round_trip(tmp_path, extra):
     emu = _halrs_run(tmp_path, *extra)
     time.sleep(1.5)
@@ -68,6 +75,10 @@ def test_uart_round_trip(tmp_path, extra):
     assert "intercept HAL_UART_Receive_IT hit 1x" in emu_out, emu_out
     if extra:
         assert "poll loop detected" not in emu_out, "static hints should suffice"
+    assert "trampoline unavailable" not in emu_out
+    if extra is PASSTHROUGH:
+        # The real HAL_UART_Init ran: it programs USART1's baud rate register.
+        assert "wr USART1+0x8/4" in emu_out, emu_out
 
 
 @needs_build

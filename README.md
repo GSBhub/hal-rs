@@ -31,9 +31,12 @@ How a run fits together:
 1. `halrs run` loads the HALucinator configs with HALucinator's own
    `HalucinatorConfig`, adds SVD/RDL register maps, and writes `run.json`
    (validated against `python/src/halrs/ir.py`).
-2. QEMU loads `libhalrs.so`, which writes copies of the firmware with each
-   intercepted function's entry replaced by `bx lr`, and hooks only those
-   instructions.
+2. QEMU loads `libhalrs.so`, which writes patched copies of the firmware and
+   hooks only the patched instructions. Each intercepted function's entry
+   branches to a small trampoline (`cmp r12,#0; beq orig; bx lr`, then the
+   relocated original entry). The handler's decision goes in r12: return, or
+   run the original function. Constant-return intercepts use a bare `bx lr`
+   stub instead.
 3. The `halrs-m` machine asks the plugin for its layout (`halrs_board()`), maps
    memories and one `halrs-periph` MMIO window per peripheral, and forwards MMIO
    to the plugin.
@@ -110,8 +113,11 @@ bench/hook_rate.sh
 The e2e tests boot HALucinator's STM32 UART example and type into it through
 `hal_dev_uart`. They run it twice: once with HALucinator's own config, and once
 with clock/power init running against SVD models instead of intercepts. They
-also raise an IRQ from a Python handler, and check that Ctrl-C works while a
-handler is blocked.
+also check three more cases:
+
+- a pass-through handler (`ArgumentLogger`) whose real function then runs,
+- an IRQ raised from a Python handler,
+- Ctrl-C while a handler is blocked.
 
 Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 `HAL_UART_GetState`, guest loop included:
@@ -127,11 +133,11 @@ Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 |---|---|
 | halrs-m machine, halrs-periph, plugin ABI | done |
 | Stub intercepts (`bx lr`), Rust return handlers | done |
+| Pass-through handlers (`return False, None`) via trampolines | done (falls back to a stub, with a log line, if the entry isn't relocatable) |
 | Embedded HALucinator handlers, avatar2 shim, zmq peripheral server | done |
 | HALucinator `emulate:` peripherals (Python `AvatarPeripheral`) | done |
 | SVD / SystemRDL -> Rust models, hints, poll detector | done |
 | IRQs from handlers (NVIC), Ctrl-C while blocked | done |
-| Pass-through handlers (`return False, None`) | **not yet**: needs trampoline mode; logs a warning today |
 | `AvatarPeripheral`-based bp_handlers (`get_mmio_info`) and watchpoints | not yet |
 | Tier-2 function matching (pyghidra FunctionID), LibMatch | not yet |
 | avatar2 `HalrsTarget` (drive halrs QEMU from avatar2 scripts) | not yet |

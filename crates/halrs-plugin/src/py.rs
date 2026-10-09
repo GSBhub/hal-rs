@@ -139,11 +139,14 @@ fn report(py: Python<'_>, what: &str, e: PyErr) {
     e.print(py);
 }
 
-/// Run the HALucinator handler for the intercept at `addr`.
-pub fn dispatch(addr: u64) {
-    let Some(rt) = RUNTIME.get() else { return };
+/// Run the HALucinator handler for the intercept at `addr`; returns whether it
+/// intercepted (true) or wants the original function to run (false). A handler
+/// that raises counts as intercepted, so a broken handler doesn't silently run
+/// code the config meant to skip.
+pub fn dispatch(addr: u64) -> bool {
+    let Some(rt) = RUNTIME.get() else { return true };
     if SHUTDOWN.load(Ordering::Acquire) {
-        return;
+        return true;
     }
     Python::attach(|py| {
         let tid = unsafe { PyThread_get_thread_ident() };
@@ -151,13 +154,17 @@ pub fn dispatch(addr: u64) {
         let r = rt.dispatch.call1(py, (addr,));
         IN_HANDLER.store(0, Ordering::Release);
         match r {
+            Ok(v) => v.extract::<bool>(py).unwrap_or(true),
             Err(e) if SHUTDOWN.load(Ordering::Acquire) => {
-                log(&format!("handler at {addr:#x} aborted for shutdown ({e})"))
+                log(&format!("handler at {addr:#x} aborted for shutdown ({e})"));
+                true
             }
-            Err(e) => report(py, &format!("handler at {addr:#x} raised"), e),
-            Ok(_) => {}
+            Err(e) => {
+                report(py, &format!("handler at {addr:#x} raised"), e);
+                true
+            }
         }
-    });
+    })
 }
 
 /// QEMU is shutting down: interrupt a handler that is blocked (e.g. waiting for

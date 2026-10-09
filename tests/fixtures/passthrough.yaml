@@ -1,0 +1,7 @@
+# HALucinator's ArgumentLogger with intercept:false logs HAL_UART_Init's
+# argument and then lets the real function run (needs a trampoline).
+intercepts:
+- class: halucinator.bp_handlers.generic.argument_loggers.ArgumentLogger
+  function: HAL_UART_Init
+  symbol: HAL_UART_Init
+  registration_args: {num_args: 1, intercept: false}

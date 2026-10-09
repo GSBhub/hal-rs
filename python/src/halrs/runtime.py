@@ -53,7 +53,6 @@ class Runtime:
             if ic.bp_addr is not None:
                 intercepts.register_bp_handler(self.target, ic)
         self.addr2bp = {addr: bp for bp, addr in self.target.breakpoints().items()}
-        self._warned_passthrough: set[int] = set()
 
         peripheral_server.start(rx_port, tx_port, self.target)
         threading.Thread(target=peripheral_server.run_server, name="halrs-periph-server",
@@ -74,11 +73,6 @@ class Runtime:
             intercepts.interceptor(self.avatar, msg)
         finally:
             t.current_pc = None
-        if not t.returned and addr not in self._warned_passthrough:
-            # Stub-mode entry can't fall through to the original function yet.
-            self._warned_passthrough.add(addr)
-            native.log("handler at %#x passed through; stub returned anyway "
-                       "(needs trampoline mode)" % addr)
         return t.returned
 
     def mmio_read(self, name: str, offset: int, size: int) -> int:

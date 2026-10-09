@@ -68,8 +68,11 @@ def build_run_config(configs: list[Path], outdir: Path, *, rx_port: int = 5555,
             continue
         handler = ({"kind": "python", "cls": ic.cls, "function": ic.function} if python
                    else {"kind": "return", "value": 0})
+        # HALucinator handlers may return (False, None) to run the original
+        # function, which needs a trampoline; constant returns never do.
         run["intercepts"].append({"symbol": ic.symbol or ic.function,
-                                  "addr": ic.bp_addr & ~1, "handler": handler})
+                                  "addr": ic.bp_addr & ~1, "handler": handler,
+                                  "mode": "trampoline" if python else "stub"})
 
     if python:
         run["python"] = {

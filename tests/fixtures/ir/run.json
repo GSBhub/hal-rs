@@ -2776,7 +2776,7 @@
   {
    "symbol": "HardFault_Handler",
    "addr": 134226816,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.IPythonShell",
@@ -2786,7 +2786,7 @@
   {
    "symbol": "HAL_UART_Init",
    "addr": 134222428,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
@@ -2796,7 +2796,7 @@
   {
    "symbol": "HAL_UART_GetState",
    "addr": 134223380,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
@@ -2806,7 +2806,7 @@
   {
    "symbol": "HAL_UART_Transmit_IT",
    "addr": 134222584,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
@@ -2816,7 +2816,7 @@
   {
    "symbol": "HAL_UART_Receive_IT",
    "addr": 134222724,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART",
@@ -2826,7 +2826,7 @@
   {
    "symbol": "HAL_GetTick",
    "addr": 134221860,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.generic.timer.Timer",
@@ -2836,7 +2836,7 @@
   {
    "symbol": "HAL_InitTick",
    "addr": 134221728,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.ReturnZero",
@@ -2846,7 +2846,7 @@
   {
    "symbol": "HAL_IncTick",
    "addr": 134221824,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.Counter",
@@ -2856,7 +2856,7 @@
   {
    "symbol": "HAL_MspInit",
    "addr": 134221716,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.ReturnZero",
@@ -2866,7 +2866,7 @@
   {
    "symbol": "HAL_RCC_ClockConfig",
    "addr": 134219868,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.ReturnZero",
@@ -2876,7 +2876,7 @@
   {
    "symbol": "HAL_RCC_OscConfig",
    "addr": 134225328,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.ReturnZero",
@@ -2886,7 +2886,7 @@
   {
    "symbol": "HAL_PWREx_EnableOverDrive",
    "addr": 134226480,
-   "mode": "stub",
+   "mode": "trampoline",
    "handler": {
     "kind": "python",
     "cls": "halucinator.bp_handlers.ReturnZero",

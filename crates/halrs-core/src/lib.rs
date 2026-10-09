@@ -4,6 +4,7 @@
 pub mod config;
 pub mod patch;
 pub mod regfile;
+pub mod thumb;
 
 use std::path::PathBuf;
 

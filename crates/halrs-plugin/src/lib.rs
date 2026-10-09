@@ -19,8 +19,8 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 
-use halrs_core::config::{HandlerRef, ModelKind, RunConfig};
-use halrs_core::patch::patch_images;
+use halrs_core::config::{HandlerRef, InterceptMode, ModelKind, RunConfig};
+use halrs_core::patch::{Hook, patch_images};
 use halrs_core::regfile::{PeriphModel, ReadNote};
 use qemu_plugin_sys::{
     QEMU_PLUGIN_VERSION, qemu_info_t, qemu_plugin_cb_flags, qemu_plugin_id_t,
@@ -43,9 +43,12 @@ struct Host {
 struct State {
     cfg: RunConfig,
     board: Board,
-    /// Patched entry address -> index into `cfg.intercepts`.
+    /// Hooked instruction address -> index into `cfg.intercepts` / `hooks`.
     intercepts: HashMap<u64, usize>,
+    hooks: Vec<Hook>,
     hits: Vec<AtomicU64>,
+    /// Stub intercepts whose handler asked to fall through (warned once).
+    passthrough_warned: Mutex<std::collections::HashSet<usize>>,
     models: Mutex<Vec<PeriphModel>>,
     regs: OnceLock<HashMap<String, RegHandle>>,
     host: Mutex<Option<Host>>,
@@ -76,9 +79,16 @@ fn install(args: &HashMap<String, String>) -> Result<State, String> {
         .get("outdir")
         .map(PathBuf::from)
         .unwrap_or_else(|| std::env::temp_dir().join(format!("halrs-{}", std::process::id())));
-    let cfg = patch_images(&cfg, &outdir).map_err(|e| e.to_string())?;
+    let patched = patch_images(&cfg, &outdir).map_err(|e| e.to_string())?;
+    let (cfg, hooks) = (patched.cfg, patched.hooks);
+    for (ic, h) in cfg.intercepts.iter().zip(&hooks) {
+        if let Some(note) = &h.note {
+            log(&format!("{}: trampoline unavailable ({note}); using a stub, so the \
+                          handler can't fall through to the original", ic.symbol));
+        }
+    }
 
-    let intercepts = cfg.intercepts.iter().enumerate().map(|(i, ic)| (ic.addr, i)).collect();
+    let intercepts = hooks.iter().enumerate().map(|(i, h)| (h.addr, i)).collect();
     let hits = cfg.intercepts.iter().map(|_| AtomicU64::new(0)).collect();
     let models = cfg.peripherals.iter().map(PeriphModel::new).collect();
     log(&format!(
@@ -91,7 +101,9 @@ fn install(args: &HashMap<String, String>) -> Result<State, String> {
         board: Board::new(&cfg),
         cfg,
         intercepts,
+        hooks,
         hits,
+        passthrough_warned: Mutex::new(Default::default()),
         models: Mutex::new(models),
         regs: OnceLock::new(),
         host: Mutex::new(None),
@@ -180,17 +192,31 @@ unsafe extern "C" fn on_intercept(_vcpu: c_uint, udata: *mut c_void) {
     st.hits[idx].fetch_add(1, Ordering::Relaxed);
     let regs = st.regs.get().expect("vcpu_init ran");
 
-    let ret = match &ic.handler {
-        HandlerRef::Return { value } => *value,
-        HandlerRef::Python { .. } => {
-            // The shim writes r0 itself (HALucinator's execute_return).
-            #[cfg(feature = "python")]
-            py::dispatch(ic.addr);
-            None
-        }
+    let (intercepted, ret) = match &ic.handler {
+        HandlerRef::Return { value } => (true, *value),
+        // The shim writes r0 itself (HALucinator's execute_return).
+        #[cfg(feature = "python")]
+        HandlerRef::Python { .. } => (py::dispatch(ic.addr), None),
+        #[cfg(not(feature = "python"))]
+        HandlerRef::Python { .. } => (true, None),
     };
     if let (Some(v), Some(&r0)) = (ret, regs.get("r0")) {
         qemu::write_reg(r0, v, 4);
+    }
+    match st.hooks[idx].mode {
+        // Trampolines branch on r12: non-zero returns, zero runs the original.
+        InterceptMode::Trampoline => {
+            if let Some(&r12) = regs.get("r12") {
+                qemu::write_reg(r12, u64::from(intercepted), 4);
+            }
+        }
+        InterceptMode::Stub if !intercepted => {
+            if st.passthrough_warned.lock().unwrap().insert(idx) {
+                log(&format!("{}: handler asked to run the original function, but it \
+                              is patched as a stub, so it returned anyway", ic.symbol));
+            }
+        }
+        InterceptMode::Stub => {}
     }
 }
 
