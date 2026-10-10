@@ -4,6 +4,11 @@
 
 takes the same ``-c`` configs as ``halucinator`` and runs the firmware on the
 qmake-built QEMU with libhalrs.so.
+
+    halrs models regs.svd -o regs.py [--memory memory.yaml]
+
+writes HALucinator/avatar2 peripheral models (and a memory config using them)
+from an SVD or RDL; ``peakrdl halucinator`` is the same from PeakRDL.
 """
 
 from __future__ import annotations
@@ -133,6 +138,23 @@ def cmd_fidb_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_models(args: argparse.Namespace) -> int:
+    from .frontend import load_regmap
+    from .peakrdl import memory_source, model_source, write
+
+    regmap = Path(args.regmap)
+    ps = load_regmap(regmap)
+    if args.only:
+        ps = [p for p in ps if p.name in args.only]
+    out = Path(args.out)
+    write(out, model_source(ps, regmap.name))
+    if args.memory:
+        write(args.memory, memory_source(ps, args.module or out.stem, regmap.name))
+    print(f"halrs: {len(ps)} peripherals -> {out}"
+          + (f", {args.memory}" if args.memory else ""), file=sys.stderr)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="halrs")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -172,6 +194,14 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--force-fid", action="store_true", help="ignore ELF symbols")
     m.add_argument("--no-callgraph", action="store_true")
     m.set_defaults(func=cmd_match)
+
+    g = sub.add_parser("models", help="HALucinator/avatar2 peripheral models from SVD/RDL")
+    g.add_argument("regmap", help="CMSIS-SVD (.svd) or SystemRDL (.rdl)")
+    g.add_argument("-o", "--out", required=True, help="output Python module")
+    g.add_argument("--memory", metavar="YAML", help="also write a HALucinator memory config")
+    g.add_argument("--module", help="module name the memory config imports (default: -o stem)")
+    g.add_argument("--only", action="append", metavar="PERIPH", help="just these (repeatable)")
+    g.set_defaults(func=cmd_models)
 
     f = sub.add_parser("fidb", help="Ghidra FunctionID databases")
     fsub = f.add_subparsers(dest="fidb_cmd", required=True)

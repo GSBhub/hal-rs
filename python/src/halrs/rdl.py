@@ -72,8 +72,11 @@ def load_rdl(path: Path, top: str | None = None) -> list[Peripheral]:
     declared = re.search(r"\bproperty\s+halrs_irq\b", path.read_text(errors="replace"))
     rdlc.register_udp(_HalrsIrq, soft=bool(declared))
     rdlc.compile_file(str(path))
-    root = rdlc.elaborate(top_def_name=top).top
+    return peripherals(rdlc.elaborate(top_def_name=top).top)
 
+
+def peripherals(root: AddrmapNode) -> list[Peripheral]:
+    """Peripherals of an elaborated top addrmap (PeakRDL exporters get one)."""
     blocks = [c for c in root.children(unroll=True) if isinstance(c, (AddrmapNode, RegfileNode))]
     if not blocks:
         return [_peripheral(root, root.inst_name)]

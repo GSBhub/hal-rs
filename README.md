@@ -102,6 +102,31 @@ Anything the hints miss gets caught by a poll-loop detector. It fires after the
 same register reads back the same value 64 times with no write in between, and
 it logs each time it steps in.
 
+### Python models for HALucinator (PeakRDL exporters)
+
+The same models can also be written out as Python `AvatarPeripheral` classes,
+which stock HALucinator can load too. This copies what Antmicro did for Renode,
+where `peakrdl renode` writes C# peripheral models and `peakrdl renode-repl`
+writes the platform file (both live in the Renode repo under `tools/`):
+
+```sh
+peakrdl halucinator        soc.rdl -o soc_regs.py
+peakrdl halucinator-memory soc.rdl -o soc_memory.yaml --module soc_regs
+halrs models STM32F429.svd -o f429_regs.py --memory f429_memory.yaml   # same, from SVD or RDL
+```
+
+The generated module depends only on avatar2. Each peripheral class carries
+the Rust model's semantics: reset values, access rules and hints. The poll
+detector isn't carried over. To add behaviour, subclass a class in another file
+and define `read_<REG>(value)` or `write_<REG>(value, old)`.
+
+avatar2 wants memory regions in whole 4 KB pages, so the memory config maps
+page-aligned windows to the generated `Bus`, which routes each access to the
+peripheral inside. `emulate:` takes a dotted `module.Class`. hal-rs resolves
+it; stock HALucinator only looks names up in `peripheral_models.generic`,
+which is a three-line change to upstream. Files that use `halrs_irq` without
+declaring it are accepted.
+
 ## Function matching (stripped firmware)
 
 `halrs match` recovers function names and writes HALucinator's `addrs.yaml`,
@@ -174,11 +199,14 @@ bench/hook_rate.sh
 The e2e tests boot HALucinator's STM32 UART example and type into it through
 `hal_dev_uart`. They run it twice: once with HALucinator's own config, and once
 with clock/power init running against SVD models instead of intercepts. They
-also check three more cases:
+also check four more cases:
 
 - a pass-through handler (`ArgumentLogger`) whose real function then runs,
 - an IRQ raised from a Python handler,
 - Ctrl-C while a handler is blocked.
+- every peripheral as a generated Python model (`halrs models` on the F429
+  SVD), run through HALucinator's memory config, with clock init not
+  intercepted.
 
 Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 `HAL_UART_GetState`, guest loop included:
@@ -198,6 +226,7 @@ Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 | Embedded HALucinator handlers, avatar2 shim, zmq peripheral server | done |
 | HALucinator `emulate:` peripherals (Python `AvatarPeripheral`) | done |
 | SVD / SystemRDL -> Rust models, hints, poll detector | done |
+| PeakRDL exporters: HALucinator Python models + memory config | done (no poll detector in the Python models) |
 | IRQs from handlers (NVIC), Ctrl-C while blocked | done |
 | `AvatarPeripheral`-based bp_handlers (`get_mmio_info`) and watchpoints | not yet |
 | Function matching: ELF symbols, vector table, FunctionID, call-graph context | done (STM32F4 HAL references) |

@@ -73,11 +73,12 @@ impl RegState {
         v
     }
 
-    fn write(&mut self, new: u64) {
-        let keep = self.read_only;
+    /// `lanes`: the bits the access actually wrote (narrow writes touch fewer).
+    fn write(&mut self, new: u64, lanes: u64) {
+        let keep = self.read_only | !lanes;
         let mut v = (self.value & keep) | (new & !keep & !self.w1c);
         // W1C: writing 1 clears, writing 0 leaves the bit alone.
-        v |= self.value & self.w1c & !new;
+        v |= self.value & self.w1c & (!new | !lanes);
         self.value = v;
     }
 }
@@ -158,8 +159,7 @@ impl PeriphModel {
         };
         let r = &mut self.regs[i];
         let shift = (offset - r.desc.offset) * 8;
-        let merged = (r.value & !(mask << shift)) | ((value & mask) << shift);
-        r.write(merged);
+        r.write((value & mask) << shift, mask << shift);
     }
 
     /// Track consecutive identical reads of the same register.
@@ -246,6 +246,16 @@ mod tests {
         assert_eq!(m.reg_value("SR").unwrap() & (1 << 5), 0);
         m.write(0, 0, 4); // TXE is RO: reset value kept
         assert_ne!(m.reg_value("SR").unwrap() & (1 << 7), 0);
+    }
+
+    #[test]
+    fn narrow_write_leaves_other_lanes_w1c() {
+        let mut m = uart();
+        m.regs[0].value |= 1 << 5;
+        m.write(1, 0, 1); // byte 1 only: RXNE (byte 0) must survive
+        assert_ne!(m.reg_value("SR").unwrap() & (1 << 5), 0);
+        m.write(0, 1 << 5, 1);
+        assert_eq!(m.reg_value("SR").unwrap() & (1 << 5), 0);
     }
 
     #[test]

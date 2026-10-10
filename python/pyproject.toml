@@ -26,9 +26,15 @@ halrs = "halrs.cli:main"
 match = [
     "pyghidra==3.1.0",
 ]
+peakrdl = ["peakrdl>=1.1"]
+
+# `peakrdl halucinator` / `peakrdl halucinator-memory` (halrs/peakrdl)
+[project.entry-points."peakrdl.exporters"]
+halucinator = "halrs.peakrdl.__peakrdl__:ModelExporter"
+halucinator-memory = "halrs.peakrdl.__peakrdl__:MemoryExporter"
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "peakrdl>=1.1"]
 
 [tool.uv.sources]
 avatar2 = { path = "../extern/avatar2", editable = true }
