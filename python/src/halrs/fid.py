@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import struct
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -158,8 +159,8 @@ def build_fidb(built: list, fidb: Path, workdir: Path) -> list[LibraryStats]:
     stats = []
     try:
         variant_files = {}
-        # name -> distinct ordered callee-name sequences across all variants.
-        calls: dict[str, list[list[str]]] = {}
+        # name -> variant -> distinct ordered callee-name sequences.
+        calls: dict[str, dict[str, list[list[str]]]] = {}
         # "units:hash" -> names, see norm_hash.
         norm: dict[str, set[str]] = {}
         for b in built:
@@ -177,8 +178,9 @@ def build_fidb(built: list, fidb: Path, workdir: Path) -> list[LibraryStats]:
                         prog.save("analyzed", _monitor())
                     for name, seq in _calls(prog).values():
                         seq = [c for c in seq if isinstance(c, str)]
-                        if seq not in calls.setdefault(name, []):
-                            calls[name].append(seq)
+                        seqs = calls.setdefault(name, {}).setdefault(b.variant.name, [])
+                        if seq not in seqs:
+                            seqs.append(seq)
                     for f in prog.getFunctionManager().getFunctions(True):
                         if not f.isThunk() and (k := norm_hash(prog, f)):
                             norm.setdefault(f"{k[0]}:{k[1]}", set()).add(str(f.getName()))
@@ -214,6 +216,7 @@ def build_fidb(built: list, fidb: Path, workdir: Path) -> list[LibraryStats]:
 @dataclass
 class MatchResult:
     names: dict[int, str] = field(default_factory=dict)          # addr -> unique name
+    variants: list[str] = field(default_factory=list)            # likeliest reference builds
     tier: dict[int, str] = field(default_factory=dict)           # addr -> how it was named
     ambiguous: dict[int, list[str]] = field(default_factory=dict)  # addr -> candidates
     functions: int = 0
@@ -235,6 +238,24 @@ def _seed_vector_table(program, base: int, image: bytes, max_vectors: int = 256)
         api.disassemble(a)
         if api.getFunctionAt(a) is None:
             api.createFunction(a, None)
+
+
+def load_ref_calls(path: Path) -> tuple[dict[str, list[list[str]]],
+                                        dict[str, dict[str, list[list[str]]]]]:
+    """Read a .calls.json: (name -> all distinct sequences, variant -> name ->
+    sequences). Older files without per-variant data give an empty second map."""
+    raw = json.loads(path.read_text())
+    merged: dict[str, list[list[str]]] = {}
+    by_variant: dict[str, dict[str, list[list[str]]]] = {}
+    for name, entry in raw.items():
+        per = entry if isinstance(entry, dict) else {"": entry}
+        for variant, seqs in per.items():
+            for seq in seqs:
+                if seq not in merged.setdefault(name, []):
+                    merged[name].append(seq)
+                if variant:
+                    by_variant.setdefault(variant, {}).setdefault(name, []).append(seq)
+    return merged, by_variant
 
 
 def _norm_matches(program, ref_norm: dict[str, list[str]], skip: set[int]) -> dict[int, str]:
@@ -285,14 +306,18 @@ def match(firmware: Path, fidb: Path, workdir: Path, *, base: int = 0x0800_0000,
 
             # Match records read their names from the open FID database.
             query = fm.openFidQueryService(prog.getLanguage(), False)
+            votes: Counter[str] = Counter()
             try:
                 hits = FidService().processProgram(prog, query, threshold, _monitor())
                 for h in hits or []:
                     addr = int(h.function.getEntryPoint().getOffset())
-                    cands = sorted({str(m.getFunctionRecord().getName()) for m in h.matches
-                                    if m.getOverallScore() >= threshold})
+                    good = [m for m in h.matches if m.getOverallScore() >= threshold]
+                    cands = sorted({str(m.getFunctionRecord().getName()) for m in good})
                     if len(cands) == 1:
                         result.names[addr] = cands[0]
+                        # Which reference builds produced this exact code.
+                        votes.update({f"{m.getLibraryRecord().getLibraryVersion()}-"
+                                      f"{m.getLibraryRecord().getLibraryVariant()}" for m in good})
                     elif cands:
                         result.ambiguous[addr] = cands
             finally:
@@ -314,9 +339,19 @@ def match(firmware: Path, fidb: Path, workdir: Path, *, base: int = 0x0800_0000,
 
             calls_json = fidb.with_suffix(".calls.json")
             if use_callgraph and calls_json.exists():
-                ref_calls = json.loads(calls_json.read_text())
+                ref_calls, by_variant = load_ref_calls(calls_json)
+                # Builds tied for the most FID agreements; their callee orders
+                # are tried first (see callgraph.propagate).
+                top = max(votes.values(), default=0)
+                result.variants = sorted(v for v, c in votes.items() if c == top and v in by_variant)
+                preferred: dict[str, list[list[str]]] = {}
+                for v in result.variants:
+                    for n, seqs in by_variant[v].items():
+                        preferred.setdefault(n, []).extend(
+                            q for q in seqs if q not in preferred.get(n, []))
                 target = {a: seq for a, (_, seq) in _calls(prog, by_addr=True).items()}
-                for a, n in propagate(result.names, target, ref_calls).items():
+                for a, n in propagate(result.names, target, ref_calls,
+                                      preferred=preferred).items():
                     result.names[a], result.tier[a] = n, "callgraph"
                     result.ambiguous.pop(a, None)
         return result

@@ -131,6 +131,10 @@ tiers:
      reference function.
 
    A proposal is applied only if it's unanimous and doesn't reuse a name.
+   Different optimization levels can order the same function's calls
+   differently. Call orders from the reference builds that FunctionID agreed
+   with most often are tried first; `halrs match` prints which builds those
+   were.
 
 ```sh
 # one-time setup: Ghidra + JDK 21 (GHIDRA_INSTALL_DIR / JAVA_HOME, or under

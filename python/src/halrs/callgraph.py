@@ -11,6 +11,12 @@ Both work on plain data so they're testable without Ghidra:
   callees (downward), and an unnamed function whose named callees pin down a
   single reference function gets that name (upward). Proposals must be
   unanimous and never reuse a name, iterating to a fixpoint.
+
+  Optimisation levels lay code out differently, so one function can have
+  several callee orders across reference builds (HAL_UART_Init calls
+  MspInit then SetConfig at -O0, the reverse at -O2), and unanimity then
+  refuses to pick. ``preferred`` holds the sequences of the builds the
+  firmware most likely came from; they're used whenever one of them fits.
 """
 
 from __future__ import annotations
@@ -51,8 +57,13 @@ def _same(a: str, b: str) -> bool:
 
 
 def propagate(anchors: dict[int, str], target_calls: dict[int, list[int]],
-              ref_calls: dict[str, list[list[str]]], max_rounds: int = 20) -> dict[int, str]:
-    """Return new names (addr -> name) inferred from `anchors`."""
+              ref_calls: dict[str, list[list[str]]], max_rounds: int = 20,
+              preferred: dict[str, list[list[str]]] | None = None) -> dict[int, str]:
+    """Return new names (addr -> name) inferred from `anchors`.
+
+    For each reference name, sequences from `preferred` are tried first and
+    all of `ref_calls` only if none of the preferred ones fit."""
+    preferred = preferred or {}
     known = dict(anchors)
     used = set(known.values())
     found: dict[int, str] = {}
@@ -61,13 +72,19 @@ def propagate(anchors: dict[int, str], target_calls: dict[int, list[int]],
         return len(seq_t) == len(seq_r) and all(
             _same(known[t], r) for t, r in zip(seq_t, seq_r) if t in known)
 
+    def fitting(seq_t: list[int], name: str) -> list[list[str]]:
+        for table in (preferred, ref_calls):
+            if refs := [r for r in table.get(name, []) if consistent(seq_t, r)]:
+                return refs
+        return []
+
     for _ in range(max_rounds):
         proposals: dict[int, set[str]] = defaultdict(set)
 
         # Downward: callees of named functions.
         for addr, name in list(known.items()):
             seq_t = target_calls.get(addr, [])
-            refs = [r for r in ref_calls.get(name, []) if consistent(seq_t, r)]
+            refs = fitting(seq_t, name)
             for r in refs:
                 for t, rn in zip(seq_t, r):
                     if t not in known:
@@ -77,7 +94,7 @@ def propagate(anchors: dict[int, str], target_calls: dict[int, list[int]],
         for addr, seq_t in target_calls.items():
             if addr in known or sum(t in known for t in seq_t) < 2:
                 continue
-            names = {n for n, rs in ref_calls.items() if any(consistent(seq_t, r) for r in rs)}
+            names = {n for n in ref_calls if fitting(seq_t, n)}
             if len(names) == 1:
                 proposals[addr] |= names
 

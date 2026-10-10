@@ -52,3 +52,21 @@ def test_cmsis_rename_is_tolerated():
     ref = {"f": [["__NVIC_SetPriorityGrouping", "g"]]}
     got = propagate({0x1: "f", 0x2: "NVIC_SetPriorityGrouping"}, {0x1: [0x2, 0x3]}, ref)
     assert got == {0x3: "g"}
+
+
+def test_preferred_build_breaks_layout_ties():
+    # -O0 and -O2 builds list HAL_UART_Init's callees in opposite address order.
+    ref = {"HAL_UART_Init": [["HAL_UART_MspInit", "UART_SetConfig"],
+                             ["UART_SetConfig", "HAL_UART_MspInit"]]}
+    calls = {0x10: [0x20, 0x30]}
+    assert propagate({0x10: "HAL_UART_Init"}, calls, ref) == {}
+    o0 = {"HAL_UART_Init": [["HAL_UART_MspInit", "UART_SetConfig"]]}
+    assert propagate({0x10: "HAL_UART_Init"}, calls, ref, preferred=o0) == {
+        0x20: "HAL_UART_MspInit", 0x30: "UART_SetConfig"}
+
+
+def test_preferred_falls_back_when_nothing_fits():
+    ref = {"f": [["a", "b"], ["a", "b", "c"]]}
+    preferred = {"f": [["a", "b"]]}  # the firmware's f makes three calls
+    got = propagate({0x1: "f"}, {0x1: [0x2, 0x3, 0x4]}, ref, preferred=preferred)
+    assert got == {0x2: "a", 0x3: "b", 0x4: "c"}

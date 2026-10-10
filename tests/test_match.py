@@ -58,5 +58,5 @@ def test_stripped_firmware(tmp_path):
     assert not wrong, wrong
     named = {TRUTH[a] for a in got}
     hal = {n for n in TRUTH.values() if n.startswith("HAL_")}
-    assert len(named & hal) >= 25, sorted(hal - named)
+    assert len(named & hal) >= 26, sorted(hal - named)
     assert len(named & INTERCEPTED) >= 12, sorted(INTERCEPTED - named)

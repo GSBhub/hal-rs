@@ -100,6 +100,8 @@ def cmd_match(args: argparse.Namespace) -> int:
     tiers = ", ".join(f"{k} {v}" for k, v in Counter(r.tier.values()).items())
     print(f"halrs: named {len(r.names)} of {r.functions} functions ({tiers}); "
           f"{len(r.ambiguous)} ambiguous -> {out}", file=sys.stderr)
+    if r.variants:
+        print(f"halrs: closest reference builds: {', '.join(r.variants)}", file=sys.stderr)
     for a, cands in sorted(r.ambiguous.items()):
         print(f"  {a:#010x} ambiguous: {', '.join(cands)}", file=sys.stderr)
     return 0
