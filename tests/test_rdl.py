@@ -24,3 +24,12 @@ def test_rdl_peripherals():
 
     cr = clk.registers[0]
     assert next(x for x in cr.fields if x.name == "PLLRDY").hint == Mirror(mirror=24)
+
+
+def test_rdl_may_declare_halrs_irq(tmp_path):
+    # Generated RDL (e.g. emulate-anything's SVD -> RDL) declares the property
+    # so other RDL tools accept it.
+    p = tmp_path / "declared.rdl"
+    p.write_text("property halrs_irq { type = longint unsigned; component = addrmap; };\n"
+                 + RDL.read_text())
+    assert {p.name: p.irqs for p in load_rdl(p)} == {p.name: p.irqs for p in load_rdl(RDL)}

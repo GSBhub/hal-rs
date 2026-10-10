@@ -2,12 +2,15 @@
 
 Each child ``addrmap``/``regfile`` of the top addrmap becomes a peripheral
 window; a top addrmap that holds registers directly is one peripheral. SystemRDL
-has no interrupt numbers, so an optional user property ``halrs_irq`` (declared
-by this module) on a peripheral supplies its NVIC line.
+has no interrupt numbers, so an optional user property ``halrs_irq`` on a
+peripheral supplies its NVIC line. Files may declare it themselves
+(``property halrs_irq { type = longint unsigned; component = addrmap; };``, so
+other RDL tools accept them); otherwise this module provides it.
 """
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from systemrdl import RDLCompiler
@@ -66,7 +69,8 @@ def _peripheral(node, name: str) -> Peripheral:
 
 def load_rdl(path: Path, top: str | None = None) -> list[Peripheral]:
     rdlc = RDLCompiler()
-    rdlc.register_udp(_HalrsIrq, soft=False)
+    declared = re.search(r"\bproperty\s+halrs_irq\b", path.read_text(errors="replace"))
+    rdlc.register_udp(_HalrsIrq, soft=bool(declared))
     rdlc.compile_file(str(path))
     root = rdlc.elaborate(top_def_name=top).top
 
