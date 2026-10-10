@@ -115,6 +115,14 @@ tiers:
    names when you pass `--svd`.
 3. **Ghidra FunctionID**, against reference builds of the STM32F4 HAL. A name
    is only applied when every match above the score threshold agrees.
+
+   FunctionID alone misses any function that makes a *backward* call in Thumb
+   code. Ghidra's instruction mask for `bl`/`b.w` keeps the offset's sign bit,
+   so the hash depends on call direction. Reference objects always call
+   forward, into Ghidra's EXTERNAL block, but linked firmware often calls
+   backward. To cover this, `fidb build` also writes a `.norm.json` index of a
+   FunctionID-style hash with that bit cleared. Functions with a unique match
+   there are named too.
 4. **Call-graph context**, LibMatch-style. Names spread outward from the
    tier-2 and tier-3 anchors:
    - *Downward:* a named function's callees, when its call list lines up with

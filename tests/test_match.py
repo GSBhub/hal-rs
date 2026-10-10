@@ -28,6 +28,15 @@ def test_tier1_matches_hal_make_addr():
     assert elf_functions(EX / "Uart_Hyperterminal_IT_O0.elf") == TRUTH
 
 
+def test_thumb2_branch_detection():
+    from halrs.fid import _thumb2_branch
+
+    assert _thumb2_branch(bytes.fromhex("fef7e2fe"))      # bl, backward (S=1)
+    assert _thumb2_branch(bytes.fromhex("00f0fefe"))      # bl, forward (S=0)
+    assert not _thumb2_branch(bytes.fromhex("4ff47a73"))  # mov.w r3, #1000
+    assert not _thumb2_branch(bytes.fromhex("fee7"))      # 16-bit b
+
+
 def _ghidra_available() -> bool:
     try:
         paths.ghidra_install()
@@ -49,5 +58,5 @@ def test_stripped_firmware(tmp_path):
     assert not wrong, wrong
     named = {TRUTH[a] for a in got}
     hal = {n for n in TRUTH.values() if n.startswith("HAL_")}
-    assert len(named & hal) >= 24, sorted(hal - named)
-    assert len(named & INTERCEPTED) >= 11, sorted(INTERCEPTED - named)
+    assert len(named & hal) >= 25, sorted(hal - named)
+    assert len(named & INTERCEPTED) >= 12, sorted(INTERCEPTED - named)
