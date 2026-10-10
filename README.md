@@ -150,6 +150,19 @@ Reference sources are the `extern/stm32/` submodules: STM's
 `stm32f4xx-hal-driver`, `cmsis-device-f4`, and CMSIS_6. Any HAL tag in the
 driver's history can be built with `--hal`.
 
+## Tracing
+
+`halrs run --trace run.jsonl` writes one JSON event per line:
+- the board layout, once at the start;
+- every MMIO access, with peripheral, offset, size, value, and whether the
+  poll-loop detector forced the value;
+- every intercepted call, and whether its handler passed through;
+- every IRQ a handler drives;
+- per-function hit counts at exit.
+
+Timestamps are host nanoseconds. The file is meant for tools such as
+emulate-anything's report, not for reading by hand.
+
 ## Tests
 
 ```sh

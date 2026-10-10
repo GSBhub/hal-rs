@@ -32,6 +32,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     plugin_args = f"{plugin},config={run_json},outdir={outdir / 'images'}"
     if args.trace_mmio:
         plugin_args += ",trace-mmio=on"
+    if args.trace:
+        plugin_args += f",trace={Path(args.trace).resolve()}"
     argv = [str(qemu), "-plugin", plugin_args, "-M", f"halrs-m,plugin={plugin}",
             "-nographic", "-monitor", "none", "-serial", "none",
             "-d", "plugin" + (f",{args.qemu_log}" if args.qemu_log else "")]
@@ -151,7 +153,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="don't hook FUNC even if the config intercepts it (repeatable)")
     r.add_argument("--handlers", action="append", default=[], metavar="DIR",
                    help="directory with your own bp_handler modules (repeatable)")
-    r.add_argument("--trace-mmio", action="store_true")
+    r.add_argument("--trace-mmio", action="store_true", help="log MMIO accesses to the QEMU log")
+    r.add_argument("--trace", metavar="FILE",
+                   help="structured JSONL trace: MMIO, intercepted calls, IRQs")
     r.add_argument("--qemu-log", help="extra QEMU -d items, e.g. in_asm,int")
     r.add_argument("--gdb", action="store_true", help="wait for gdb on :1234")
     r.add_argument("--dry-run", action="store_true", help="print the QEMU command line")

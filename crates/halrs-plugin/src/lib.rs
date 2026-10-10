@@ -1,6 +1,6 @@
 //! libhalrs.so — QEMU TCG plugin that hosts hal-rs.
 //!
-//!   qemu-system-arm -plugin libhalrs.so,config=run.json[,outdir=DIR] \
+//!   qemu-system-arm -plugin libhalrs.so,config=run.json[,outdir=DIR][,trace=FILE] \
 //!                   -M halrs-m,plugin=libhalrs.so
 //!
 //! At install it loads `run.json`, writes intercept-patched firmware copies, and
@@ -12,6 +12,7 @@ mod abi;
 #[cfg(feature = "python")]
 mod py;
 mod qemu;
+mod trace;
 
 use std::collections::HashMap;
 use std::ffi::{CStr, c_char, c_int, c_uint, c_void};
@@ -31,6 +32,8 @@ use qemu_plugin_sys::{
 
 use abi::{Board, HalrsBoard, HalrsHostOps};
 use qemu::{RegHandle, log};
+use serde_json::json;
+use trace::Trace;
 
 #[unsafe(no_mangle)]
 pub static qemu_plugin_version: c_int = QEMU_PLUGIN_VERSION as c_int;
@@ -53,6 +56,7 @@ struct State {
     regs: OnceLock<HashMap<String, RegHandle>>,
     host: Mutex<Option<Host>>,
     trace_mmio: bool,
+    trace: Option<Trace>,
 }
 
 static STATE: OnceLock<State> = OnceLock::new();
@@ -97,6 +101,17 @@ fn install(args: &HashMap<String, String>) -> Result<State, String> {
         cfg.peripherals.len(),
         cfg.intercepts.len()
     ));
+    let trace = args.get("trace").map(|p| Trace::create(&PathBuf::from(p))).transpose()?;
+    if let Some(t) = &trace {
+        t.event("start", json!({
+            "peripherals": cfg.peripherals.iter()
+                .map(|p| json!({"name": p.name, "base": p.base, "size": p.size}))
+                .collect::<Vec<_>>(),
+            "intercepts": cfg.intercepts.iter()
+                .map(|i| json!({"sym": i.symbol, "addr": i.addr}))
+                .collect::<Vec<_>>(),
+        }));
+    }
     Ok(State {
         board: Board::new(&cfg),
         cfg,
@@ -108,6 +123,7 @@ fn install(args: &HashMap<String, String>) -> Result<State, String> {
         regs: OnceLock::new(),
         host: Mutex::new(None),
         trace_mmio: args.get("trace-mmio").is_some_and(|v| v == "on"),
+        trace,
     })
 }
 
@@ -200,6 +216,9 @@ unsafe extern "C" fn on_intercept(_vcpu: c_uint, udata: *mut c_void) {
         #[cfg(not(feature = "python"))]
         HandlerRef::Python { .. } => (true, None),
     };
+    if let Some(t) = &st.trace {
+        t.event("call", json!({"sym": ic.symbol, "addr": ic.addr, "handled": intercepted}));
+    }
     if let (Some(v), Some(&r0)) = (ret, regs.get("r0")) {
         qemu::write_reg(r0, v, 4);
     }
@@ -228,6 +247,13 @@ unsafe extern "C" fn at_exit(_id: qemu_plugin_id_t, _udata: *mut c_void) {
             log(&format!("intercept {} hit {n}x", ic.symbol));
         }
     }
+    if let Some(t) = &st.trace {
+        let hits: serde_json::Map<_, _> = st.cfg.intercepts.iter().zip(&st.hits)
+            .map(|(ic, n)| (ic.symbol.clone(), json!(n.load(Ordering::Relaxed))))
+            .collect();
+        t.event("exit", json!({"hits": hits}));
+        t.flush();
+    }
 }
 
 // ---- C ABI used by the halrs-m machine / halrs-periph device -------------------
@@ -252,6 +278,9 @@ pub unsafe extern "C" fn halrs_attach_host(ops: *const HalrsHostOps) {
 
 /// Drive an NVIC external interrupt line.
 pub fn set_irq(irq: u32, level: bool) {
+    if let Some(t) = &state().trace {
+        t.event("irq", json!({"irq": irq, "level": level as u8}));
+    }
     if let Some(h) = state().host.lock().unwrap().as_ref() {
         unsafe { (h.set_irq)(h.opaque as *mut c_void, irq, level as c_int) };
     }
@@ -259,6 +288,9 @@ pub fn set_irq(irq: u32, level: bool) {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn halrs_shutdown() {
+    if let Some(t) = STATE.get().and_then(|st| st.trace.as_ref()) {
+        t.flush();
+    }
     #[cfg(feature = "python")]
     py::shutdown();
 }
@@ -270,7 +302,9 @@ pub extern "C" fn halrs_mmio_read(id: u32, offset: u64, size: c_uint) -> u64 {
     if let Some(p) = st.cfg.peripherals.get(id as usize)
         && p.model == ModelKind::Python
     {
-        return py::mmio_read(&p.name, offset, size);
+        let v = py::mmio_read(&p.name, offset, size);
+        trace_mmio(st, &p.name, "r", offset, size, v, false);
+        return v;
     }
     let mut models = st.models.lock().unwrap();
     let Some(m) = models.get_mut(id as usize) else { return 0 };
@@ -281,6 +315,7 @@ pub extern "C" fn halrs_mmio_read(id: u32, offset: u64, size: c_uint) -> u64 {
     if st.trace_mmio {
         log(&format!("rd {}+{offset:#x}/{size} -> {v:#x}", m.name));
     }
+    trace_mmio(st, &m.name, "r", offset, size, v, note == ReadNote::PollBroken);
     v
 }
 
@@ -291,6 +326,7 @@ pub extern "C" fn halrs_mmio_write(id: u32, offset: u64, value: u64, size: c_uin
     if let Some(p) = st.cfg.peripherals.get(id as usize)
         && p.model == ModelKind::Python
     {
+        trace_mmio(st, &p.name, "w", offset, size, value, false);
         return py::mmio_write(&p.name, offset, size, value);
     }
     let mut models = st.models.lock().unwrap();
@@ -298,5 +334,16 @@ pub extern "C" fn halrs_mmio_write(id: u32, offset: u64, value: u64, size: c_uin
     if st.trace_mmio {
         log(&format!("wr {}+{offset:#x}/{size} <- {value:#x}", m.name));
     }
+    trace_mmio(st, &m.name, "w", offset, size, value, false);
     m.write(offset, value, size);
+}
+
+fn trace_mmio(st: &State, p: &str, op: &str, off: u64, size: c_uint, val: u64, poll: bool) {
+    if let Some(t) = &st.trace {
+        let mut ev = json!({"op": op, "p": p, "off": off, "size": size, "val": val});
+        if poll {
+            ev["poll"] = json!(true);
+        }
+        t.event("mmio", ev);
+    }
 }
