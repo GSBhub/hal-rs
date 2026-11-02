@@ -1,0 +1,46 @@
+name: CI
+
+# The front end and the IR contract, without the heavy paths. Building QEMU
+# through qmake (~15 min), the TCG plugin's embedded CPython, Ghidra's
+# FunctionID and the arm-none-eabi reference builds are all left out; the tests
+# that need them skip themselves (tests/test_e2e_uart.py on a missing
+# build/, tests/test_match.py on a missing Ghidra or FIDB).
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rust:
+    name: cargo test (halrs-core)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      # halrs-core only: halrs-plugin links an embedded CPython and QEMU's
+      # plugin API. Its run.json tests parse the same fixture the Python
+      # front end writes, which is what keeps serde and pydantic in step.
+      - run: cargo test -p halrs-core
+
+  python:
+    name: pytest (front end)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      # Only the submodules the front end imports. extern/qmake carries a full
+      # QEMU tree, and extern/stm32/* is only for `halrs fidb build`.
+      - name: Check out HALucinator and avatar2
+        run: git submodule update --init extern/halucinator extern/avatar2
+
+      - uses: astral-sh/setup-uv@v10
+      - name: Sync the venv (uv fetches the 3.12 the project pins)
+        run: uv sync
+        working-directory: python
+
+      - name: pytest
+        run: uv run pytest ../tests -v
+        working-directory: python
