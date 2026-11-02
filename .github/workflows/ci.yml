@@ -36,7 +36,7 @@ jobs:
       - name: Check out HALucinator and avatar2
         run: git submodule update --init extern/halucinator extern/avatar2
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.3
       - name: Sync the venv (uv fetches the 3.12 the project pins)
         run: uv sync
         working-directory: python
