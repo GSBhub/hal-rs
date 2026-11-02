@@ -102,6 +102,92 @@ Anything the hints miss gets caught by a poll-loop detector. It fires after the
 same register reads back the same value 64 times with no write in between, and
 it logs each time it steps in.
 
+### Python models for HALucinator (PeakRDL exporters)
+
+The same models can also be written out as Python `AvatarPeripheral` classes,
+which stock HALucinator can load too. This copies what Antmicro did for Renode,
+where `peakrdl renode` writes C# peripheral models and `peakrdl renode-repl`
+writes the platform file (both live in the Renode repo under `tools/`):
+
+```sh
+peakrdl halucinator        soc.rdl -o soc_regs.py
+peakrdl halucinator-memory soc.rdl -o soc_memory.yaml --module soc_regs
+halrs models STM32F429.svd -o f429_regs.py --memory f429_memory.yaml   # same, from SVD or RDL
+```
+
+The generated module depends only on avatar2. Each peripheral class carries
+the Rust model's semantics: reset values, access rules and hints. The poll
+detector isn't carried over. To add behaviour, subclass a class in another file
+and define `read_<REG>(value)` or `write_<REG>(value, old)`.
+
+avatar2 wants memory regions in whole 4 KB pages, so the memory config maps
+page-aligned windows to the generated `Bus`, which routes each access to the
+peripheral inside. `emulate:` takes a dotted `module.Class`. hal-rs resolves
+it; stock HALucinator only looks names up in `peripheral_models.generic`,
+which is a three-line change to upstream. Files that use `halrs_irq` without
+declaring it are accepted.
+
+## Function matching (stripped firmware)
+
+`halrs match` recovers function names and writes HALucinator's `addrs.yaml`,
+so a stripped image can run with a stock HALucinator config. It works in
+tiers:
+
+1. **ELF symbols.** If the input has them, they're used directly. The output is
+   identical to HALucinator's `hal_make_addr`, without its angr dependency.
+2. **Vector table.** The CMSIS core handlers (Reset, HardFault, SysTick, ...)
+   are named by slot. Device IRQ handlers are named from the SVD's interrupt
+   names when you pass `--svd`.
+3. **Ghidra FunctionID**, against reference builds of the STM32F4 HAL. A name
+   is only applied when every match above the score threshold agrees.
+
+   FunctionID alone misses any function that makes a *backward* call in Thumb
+   code. Ghidra's instruction mask for `bl`/`b.w` keeps the offset's sign bit,
+   so the hash depends on call direction. Reference objects always call
+   forward, into Ghidra's EXTERNAL block, but linked firmware often calls
+   backward. To cover this, `fidb build` also writes a `.norm.json` index of a
+   FunctionID-style hash with that bit cleared. Functions with a unique match
+   there are named too.
+4. **Call-graph context**, LibMatch-style. Names spread outward from the
+   tier-2 and tier-3 anchors:
+   - *Downward:* a named function's callees, when its call list lines up with
+     a reference function's.
+   - *Upward:* an unnamed function whose named callees pin down exactly one
+     reference function.
+
+   A proposal is applied only if it's unanimous and doesn't reuse a name.
+   Different optimization levels can order the same function's calls
+   differently. Call orders from the reference builds that FunctionID agreed
+   with most often are tried first; `halrs match` prints which builds those
+   were.
+
+```sh
+# one-time setup: Ghidra + JDK 21 (GHIDRA_INSTALL_DIR / JAVA_HOME, or under
+# ~/.local/opt), arm-none-eabi-gcc toolchains (~/.local/opt/*/bin, or HALRS_TOOLCHAINS)
+(cd python && uv sync --extra match)
+git submodule update --init extern/stm32/*
+halrs fidb build                       # HAL v1.7.6+v1.8.5 x each toolchain x -O0/-Os/-O2
+halrs match firmware.bin --svd chip.svd -o firmware_addrs.yaml
+halrs run -c config.yaml -c firmware_addrs.yaml -c memory.yaml
+```
+
+Reference sources are the `extern/stm32/` submodules: STM's
+`stm32f4xx-hal-driver`, `cmsis-device-f4`, and CMSIS_6. Any HAL tag in the
+driver's history can be built with `--hal`.
+
+## Tracing
+
+`halrs run --trace run.jsonl` writes one JSON event per line:
+- the board layout, once at the start;
+- every MMIO access, with peripheral, offset, size, value, and whether the
+  poll-loop detector forced the value;
+- every intercepted call, and whether its handler passed through;
+- every IRQ a handler drives;
+- per-function hit counts at exit.
+
+Timestamps are host nanoseconds. The file is meant for tools such as
+emulate-anything's report, not for reading by hand.
+
 ## Tests
 
 ```sh
@@ -113,11 +199,14 @@ bench/hook_rate.sh
 The e2e tests boot HALucinator's STM32 UART example and type into it through
 `hal_dev_uart`. They run it twice: once with HALucinator's own config, and once
 with clock/power init running against SVD models instead of intercepts. They
-also check three more cases:
+also check four more cases:
 
 - a pass-through handler (`ArgumentLogger`) whose real function then runs,
 - an IRQ raised from a Python handler,
 - Ctrl-C while a handler is blocked.
+- every peripheral as a generated Python model (`halrs models` on the F429
+  SVD), run through HALucinator's memory config, with clock init not
+  intercepted.
 
 Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 `HAL_UART_GetState`, guest loop included:
@@ -137,9 +226,11 @@ Measured on this machine (`bench/hook_rate.sh`), hits on a spinning
 | Embedded HALucinator handlers, avatar2 shim, zmq peripheral server | done |
 | HALucinator `emulate:` peripherals (Python `AvatarPeripheral`) | done |
 | SVD / SystemRDL -> Rust models, hints, poll detector | done |
+| PeakRDL exporters: HALucinator Python models + memory config | done (no poll detector in the Python models) |
 | IRQs from handlers (NVIC), Ctrl-C while blocked | done |
 | `AvatarPeripheral`-based bp_handlers (`get_mmio_info`) and watchpoints | not yet |
-| Tier-2 function matching (pyghidra FunctionID), LibMatch | not yet |
+| Function matching: ELF symbols, vector table, FunctionID, call-graph context | done (STM32F4 HAL references) |
+| Matching for other vendor HALs; the full LibMatch submodule | not yet |
 | avatar2 `HalrsTarget` (drive halrs QEMU from avatar2 scripts) | not yet |
 | Pcode backend | waiting on the Pcode target; see contract below |
 | Benchmarks: plugin overhead with no hooks; stock HALucinator comparison | not yet |

@@ -7,3 +7,14 @@
 [submodule "extern/qmake"]
 	path = extern/qmake
 	url = https://github.com/GSBhub/qmake
+[submodule "extern/stm32/stm32f4xx-hal-driver"]
+	path = extern/stm32/stm32f4xx-hal-driver
+	url = https://github.com/STMicroelectronics/stm32f4xx-hal-driver.git
+[submodule "extern/stm32/cmsis-device-f4"]
+	path = extern/stm32/cmsis-device-f4
+	url = https://github.com/STMicroelectronics/cmsis-device-f4.git
+[submodule "extern/stm32/CMSIS_6"]
+	path = extern/stm32/CMSIS_6
+	url = https://github.com/ARM-software/CMSIS_6
+	branch = main
+	shallow = true

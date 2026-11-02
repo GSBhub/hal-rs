@@ -14,6 +14,7 @@ import time
 from pathlib import Path
 
 import pytest
+import yaml
 
 from halrs import paths
 
@@ -27,9 +28,9 @@ needs_build = pytest.mark.skipif(
 )
 
 
-def _halrs_run(outdir: Path, *extra: str) -> subprocess.Popen:
+def _halrs_run(outdir: Path, *extra: str, configs=CONFIGS) -> subprocess.Popen:
     cmd = [sys.executable, "-m", "halrs.cli", "run", "-n", "e2e", "--outdir", str(outdir)]
-    for c in CONFIGS:
+    for c in configs:
         cmd += ["-c", str(c)]
     return subprocess.Popen(cmd + list(extra), stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True)
@@ -43,6 +44,25 @@ SVD_ONLY_INIT = ["--svd", str(SVD)] + [
                 "HAL_PWREx_EnableOverDrive") for a in ("--skip-intercept", f)]
 
 
+# Every peripheral as a Python model from `halrs models` (what `peakrdl
+# halucinator` writes), through HALucinator's memory config instead of --svd.
+GENERATED = SVD_ONLY_INIT[2:]   # (the clock-init skips, without --svd)
+
+
+def _generated_configs(tmp: Path) -> tuple[list[Path], list[str]]:
+    from halrs.cli import main
+    gen = tmp / "gen"
+    gen.mkdir()
+    main(["models", str(SVD), "-o", str(gen / "f429_regs.py"), "--memory", str(gen / "periph.yaml")])
+    mem = yaml.safe_load(CONFIGS[2].read_text())
+    for m in mem["memories"].values():
+        if "file" in m:
+            m["file"] = str(EXAMPLE / m["file"])
+    del mem["peripherals"]   # the catch-all GenericPeripheral logger
+    (gen / "mem.yaml").write_text(yaml.safe_dump(mem))
+    return [*CONFIGS[:2], gen / "mem.yaml", gen / "periph.yaml"], ["--handlers", str(gen)]
+
+
 # HALucinator's ArgumentLogger(intercept=False) on HAL_UART_Init: the handler
 # runs, then the real function executes via a trampoline (against SVD models).
 PASSTHROUGH = ["--svd", str(SVD), "--trace-mmio",
@@ -50,10 +70,14 @@ PASSTHROUGH = ["--svd", str(SVD), "--trace-mmio",
 
 
 @needs_build
-@pytest.mark.parametrize("extra", [[], SVD_ONLY_INIT, PASSTHROUGH],
-                         ids=["halucinator-config", "svd-init", "passthrough"])
+@pytest.mark.parametrize("extra", [[], SVD_ONLY_INIT, PASSTHROUGH, GENERATED],
+                         ids=["halucinator-config", "svd-init", "passthrough", "generated-models"])
 def test_uart_round_trip(tmp_path, extra):
-    emu = _halrs_run(tmp_path, *extra)
+    if extra is GENERATED:
+        configs, handlers = _generated_configs(tmp_path)
+        emu = _halrs_run(tmp_path, *extra, *handlers, configs=configs)
+    else:
+        emu = _halrs_run(tmp_path, *extra)
     time.sleep(1.5)
     dev = subprocess.Popen(
         [sys.executable, "-m", "halucinator.external_devices.uart", "-i", str(UART_ID)],
@@ -76,6 +100,8 @@ def test_uart_round_trip(tmp_path, extra):
     if extra:
         assert "poll loop detected" not in emu_out, "static hints should suffice"
     assert "trampoline unavailable" not in emu_out
+    if extra is GENERATED:
+        assert "13 python peripherals" in emu_out, emu_out
     if extra is PASSTHROUGH:
         # The real HAL_UART_Init ran: it programs USART1's baud rate register.
         assert "wr USART1+0x8/4" in emu_out, emu_out

@@ -10,6 +10,7 @@ for Python-emulated peripheral windows.
 
 from __future__ import annotations
 
+import importlib
 import logging
 import os
 import threading
@@ -26,6 +27,16 @@ from halucinator.peripheral_models import peripheral_server
 from .shim import FakeAvatar, ShimTarget
 
 log = logging.getLogger("halrs")
+
+
+def emulator(name: str):
+    """A memory's ``emulate:`` class: a name in HALucinator's
+    ``peripheral_models.generic`` (as stock HALucinator resolves it) or a dotted
+    ``module.Class`` path, e.g. models from ``peakrdl halucinator``."""
+    if "." not in name:
+        return getattr(peripheral_emulators, name)
+    module, _, cls = name.rpartition(".")
+    return getattr(importlib.import_module(module), cls)
 
 
 class Runtime:
@@ -46,7 +57,7 @@ class Runtime:
         self.peripherals = {}
         for mem in self.config.memories.values():
             if mem.emulate:
-                cls = getattr(peripheral_emulators, mem.emulate)
+                cls = emulator(mem.emulate)
                 self.peripherals[mem.name] = cls(mem.name, mem.base_addr, mem.size)
 
         for ic in self.config.intercepts:
